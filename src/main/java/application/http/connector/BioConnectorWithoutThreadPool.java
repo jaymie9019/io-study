@@ -3,9 +3,7 @@ package application.http.connector;
 import application.http.constants.HttpServerConstants;
 import application.http.core.Request;
 import application.http.core.Response;
-import application.http.processor.SocketHandler;
 import application.http.processor.StaticProcessor;
-import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,11 +14,11 @@ import java.net.Socket;
 /**
  * @author Jaymie on 2021/1/21
  */
-public class BioConnector {
+public class BioConnectorWithoutThreadPool {
 
     private ServerSocket serverSocket;
 
-    public BioConnector() {
+    public BioConnectorWithoutThreadPool() {
     }
 
 
@@ -30,7 +28,16 @@ public class BioConnector {
 
         while (true) {
             Socket socket = serverSocket.accept();
-            SocketHandler.handle(socket);
+            try (InputStream inputStream = socket.getInputStream();
+                 OutputStream outputStream = socket.getOutputStream()) {
+                Request request = new Request(inputStream);
+                request.parse();
+                Response response = new Response(outputStream);
+                response.setRequest(request);
+                StaticProcessor processor = new StaticProcessor();
+                processor.process(request, response);
+                socket.close();
+            }
         }
 
     }

@@ -18,8 +18,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class SocketHandler {
-    private static final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(8
-            , 100, 60, TimeUnit.SECONDS, new LinkedBlockingDeque<>(10),
+    private static final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(8, 100, 60, TimeUnit.SECONDS, new LinkedBlockingDeque<>(100),
             new NamedThreadFactory("socket-handler-pool"));
 
     /**

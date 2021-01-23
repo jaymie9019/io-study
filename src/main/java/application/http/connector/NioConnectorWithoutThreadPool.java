@@ -1,25 +1,33 @@
 package application.http.connector;
 
 import application.http.constants.HttpServerConstants;
+import application.http.core.Request;
+import application.http.core.Response;
 import application.http.processor.SocketHandler;
+import application.http.processor.StaticProcessor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.nio.channels.*;
+import java.net.Socket;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Jaymie on 2021/1/23
  */
 @Slf4j
-public class NioConnector {
+public class NioConnectorWithoutThreadPool {
     private ServerSocketChannel serverSocketChannel;
 
     private Selector selector;
 
-    public NioConnector() {
+    public NioConnectorWithoutThreadPool() {
     }
 
 
@@ -63,8 +71,20 @@ public class NioConnector {
             selectionKey.cancel();
             // 然后重新把 SocketChannel 改成阻塞状态
             client.configureBlocking(true);
-            SocketHandler.handle(client);
+            Socket socket = client.socket();
+            try (InputStream inputStream = socket.getInputStream();
+                 OutputStream outputStream = socket.getOutputStream()){
+                Request request = new Request(inputStream);
+                request.parse();
+                Response response = new Response(outputStream);
+                response.setRequest(request);
+                StaticProcessor processor = new StaticProcessor();
+                processor.process(request, response);
+                socket.close();
+                client.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-
     }
 }
