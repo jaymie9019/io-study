@@ -20,7 +20,7 @@ import java.util.Map;
 public class Request implements ServletRequest {
     private static final int BUFFER_SIZE = 1024;
 
-    private InputStream inputStream;
+    private final InputStream inputStream;
     private String uri;
 
     public Request(InputStream inputStream) {
@@ -36,6 +36,7 @@ public class Request implements ServletRequest {
         byte[] buffer = new byte[BUFFER_SIZE];
         try {
             length = inputStream.read(buffer);
+            log.info("length: {}", length);
         } catch (Exception e) {
             e.printStackTrace();
         }

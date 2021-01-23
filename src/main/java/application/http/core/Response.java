@@ -1,5 +1,8 @@
 package application.http.core;
 
+import application.http.utils.HttpProtocolUtil;
+import application.http.utils.StaticResourceUtil;
+
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletResponse;
 import java.io.*;
@@ -14,7 +17,7 @@ public class Response implements ServletResponse {
 
     private Request request;
 
-    private OutputStream output;
+    private final OutputStream output;
 
     public Response(OutputStream outputStream) {
         this.output = outputStream;
@@ -29,22 +32,18 @@ public class Response implements ServletResponse {
     }
 
     public void sendStaticResource() throws IOException {
-        File file = new File(ConnectorUtils.WEB_ROOT, request.getRequestURI());
         try {
-            write(file, HttpStatus.SC_OK);
-        } catch (IOException e) {
-            write(new File(ConnectorUtils.WEB_ROOT, "404.html"), HttpStatus.SC_NOT_FOUND);
-        }
-    }
-
-    private void write(File resource, HttpStatus httpStatus) throws IOException {
-        try (FileInputStream fis = new FileInputStream(resource)) {
-            output.write(ConnectorUtils.rendersStatus(httpStatus).getBytes(StandardCharsets.UTF_8));
-            byte[] buffer = new byte[BUFFER_SIZE];
-            int length = 0;
-            while ((length = fis.read(buffer)) != -1) {
-                output.write(buffer, 0, length);
+            String fileAbsolutePath = StaticResourceUtil.getAbsolutePath("static", request.getRequestURI());
+            File file = new File(fileAbsolutePath);
+            // 文件存在
+            if (file.exists()) {
+                StaticResourceUtil.outPutStaticResource(new FileInputStream(file), output);
+            } else {
+                // 文件不存在
+                output.write(HttpProtocolUtil.getHttpHeader404().getBytes(StandardCharsets.UTF_8));
             }
+        } catch (Exception e) {
+            System.out.println(e.toString());
         }
     }
 
