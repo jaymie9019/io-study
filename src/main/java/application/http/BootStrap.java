@@ -15,9 +15,12 @@ public class BootStrap {
 
     public static void main(String[] args) throws InterruptedException, IOException {
         BioConnector connector = new BioConnector();
-//        BioConnectorWithoutThreadPool connector = new BioConnectorWithoutThreadPool();
-//        NioConnector connector = new NioConnector();
-//        NioConnectorWithoutThreadPool connector = new NioConnectorWithoutThreadPool();
+
+        // BioConnectorWithoutThreadPool connector = new
+        // BioConnectorWithoutThreadPool();
+        // NioConnector connector = new NioConnector();
+        // NioConnectorWithoutThreadPool connector = new
+        // NioConnectorWithoutThreadPool();
         connector.run();
     }
 }
